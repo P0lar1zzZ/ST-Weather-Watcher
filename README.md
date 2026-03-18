@@ -35,7 +35,11 @@ docker run -d \
 
 ### 2. Android (Termux)
 
+如果你是用一键式脚本部署的酒馆，请先退出脚本，回到~$
+
 *请注意，你需要开启魔法。*
+
+然后你需要复制粘贴这段代码——如果你输错了，可以退出重进，复制粘贴从头再来一次。
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/P0lar1zzZ/ST-Weather-Watcher/main/install_weather.sh | bash -s -- "替换为你的APIkey" "替换为你的城市代码"
