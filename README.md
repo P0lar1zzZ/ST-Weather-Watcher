@@ -18,6 +18,9 @@ SillyTavern 实时天气同步插件。基于高德 API 实现，适用于国内
 ## 部署
 
 ### 1. Docker
+
+*不推荐，该方式是为酒馆同样部署在docker内的用户准备的，有需要可以自己折腾。*
+
 ```bash
 git clone https://github.com/P0lar1zzZ/ST-Weather-Watcher.git
 cd ST-Weather-Watcher
