@@ -8,46 +8,54 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("AMAP_KEY")
-# 🌟 注意：这里填的是 adcode（如 330100 代表杭州）
 CITY_CODE = os.getenv("CITY_CODE", "330100") 
-FILE_PATH = "/app/public/weather.txt"
+
+# --- 🛠️ 兼容性路径修复 ---
+# 1. 优先读取 install_weather.sh 写入的路径
+# 2. 如果没有，则使用原本的 Docker 路径 /app/public
+# 3. 如果前两者都不可写，最后保底写在当前文件夹
+env_path = os.getenv("ST_PUBLIC_PATH")
+if env_path and os.path.exists(os.path.dirname(env_path)):
+    FILE_PATH = os.path.join(env_path, "weather.txt")
+elif os.path.exists("/app/public"):
+    FILE_PATH = "/app/public/weather.txt"
+else:
+    FILE_PATH = "weather.txt"
+
+print(f"📍 天气文件同步路径: {FILE_PATH}")
 
 def fetch_weather():
     if not API_KEY:
         print("❌ 错误：未检测到 AMAP_KEY，请检查 .env 文件！")
         return
 
-    # 🌟 完全对齐你截图里的高德官方参数
     url = "https://restapi.amap.com/v3/weather/weatherInfo"
     params = {
         "key": API_KEY,
-        "city": CITY_CODE,      # 传入 adcode
-        "extensions": "base",   # 实况天气
-        "output": "JSON"        # 返回 JSON 格式
+        "city": CITY_CODE,
+        "extensions": "base",
+        "output": "JSON"
     }
 
     try:
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
         
-        # 文档说：status 为 1 成功，0 失败
         if data.get("status") == "1" and data.get("lives"):
             live = data["lives"][0]
-            # 拼接你喜欢的格式
             weather_str = f"{live['city']} {live['weather']} {live['temperature']}°C 湿度:{live['humidity']}%"
             
-            # 写入酒馆目录
+            # 确保目录存在并写入
             os.makedirs(os.path.dirname(FILE_PATH), exist_ok=True)
             with open(FILE_PATH, "w", encoding="utf-8") as f:
                 f.write(weather_str)
             
             print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ 高德同步成功: {weather_str}")
         else:
-            # 打印官方给出的错误原因（info 字段）
             print(f"❌ 高德接口报错: {data.get('info')}")
             
     except Exception as e:
-        print(f"💥 网络请求失败 (请确认 M4 是否能直连高德): {e}")
+        print(f"💥 网络请求失败: {e}")
 
 if __name__ == "__main__":
     interval = int(os.getenv("INTERVAL", "3600"))
