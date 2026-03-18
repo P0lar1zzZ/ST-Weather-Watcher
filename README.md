@@ -41,6 +41,8 @@ docker run -d \
 
 然后你需要复制粘贴这段代码——如果你输错了，可以退出重进，复制粘贴从头再来一次。
 
+友情提示：你不需要删除引号。
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/P0lar1zzZ/ST-Weather-Watcher/main/install_weather.sh | bash -s -- "替换为你的APIkey" "替换为你的城市代码"
 ```
