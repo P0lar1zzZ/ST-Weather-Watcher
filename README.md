@@ -31,6 +31,9 @@ docker run -d \
 ```
 
 ### 2. Android (Termux)
+
+*请注意，你需要开启魔法。*
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/P0lar1zzZ/ST-Weather-Watcher/main/install_weather.sh | bash -s -- "替换为你的APIkey" "替换为你的城市代码"
 ```
