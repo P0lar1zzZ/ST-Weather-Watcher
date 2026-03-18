@@ -1,81 +1,39 @@
 #!/bin/bash
 
-# 定义一个返回函数，方便重复调用
-function configure_step() {
-    clear
-    echo "=========================================="
-    echo "🌦️  高德天气助手 - 极简配置向导"
-    echo "=========================================="
-    
-    # --- 步骤 1: 获取 Key ---
-    while true; do
-        echo ""
-        echo "第一步：请输入您的高德 Key"
-        echo "(输入 'q' 退出安装)"
-        read -p "👉 Key: " user_key
-        [[ "$user_key" == "q" ]] && exit 1
-        
-        # 简单校验
-        if [ ${#user_key} -lt 10 ]; then
-            echo "❌ 这个 Key 看起来太短了，请重新输入。"
-            continue
-        fi
-        break
-    done
+# 1. 直接获取用户在命令行填的参数
+USER_KEY=$1
+USER_CITY=${2:-330100} # 如果没填城市，默认杭州
 
-    # --- 步骤 2: 获取 城市代码 ---
-    while true; do
-        echo ""
-        echo "第二步：请输入城市代码 (adcode)"
-        echo "(直接回车默认杭州: 330100，输入 'b' 返回上一步)"
-        read -p "👉 代码: " user_adcode
-        
-        if [[ "$user_adcode" == "b" ]]; then
-            configure_step # 递归调用，返回第一步
-            return
-        fi
-        
-        user_adcode=${user_adcode:-330100}
-        break
-    done
+# 2. 自动安装环境 (静默模式，不跳出一堆字)
+echo "正在为您配置环境，请稍候..."
+pkg update -y && pkg upgrade -y > /dev/null 2>&1
+pkg install python git -y > /dev/null 2>&1
+pip install requests python-dotenv > /dev/null 2>&1
 
-    # --- 步骤 3: 最终确认 ---
-    echo ""
-    echo "--------------------------"
-    echo "确认信息："
-    echo "Key: $user_key"
-    echo "城市: $user_adcode"
-    echo "--------------------------"
-    read -p "确认无误开始安装吗？(y/n/b): " final
-    case $final in
-        y) ;;
-        b) configure_step ;; # 返回
-        *) echo "已取消"; exit 1 ;;
-    esac
+# 3. 自动处理项目文件夹
+if [ ! -d "ST-Weather-Watcher" ]; then
+    git clone https://github.com/P0lar1zzZ/ST-Weather-Watcher.git > /dev/null 2>&1
+fi
+cd ST-Weather-Watcher
 
-    # --- 写入文件 ---
-    echo "写入配置中..."
-    cat <<EOF > .env
-AMAP_KEY=$user_key
-CITY_CODE=$user_adcode
+# 4. 自动寻找酒馆并写入 .env (完全不需要用户填路径)
+ST_PATH=$(find $HOME -maxdepth 3 -type d -name "SillyTavern" 2>/dev/null | head -n 1)
+ST_PUBLIC="${ST_PATH:-$HOME/SillyTavern}/public"
+
+cat <<EOF > .env
+AMAP_KEY=$USER_KEY
+CITY_CODE=$USER_CITY
 INTERVAL=3600
-WEATHER_FILE=weather.txt
-ST_PUBLIC_PATH=$HOME/SillyTavern/public
+ST_PUBLIC_PATH=$ST_PUBLIC
 EOF
-}
 
-# 执行配置
-configure_step
+# 5. 直接启动进程 (并在后台保持运行)
+echo "✅ 配置成功！正在启动天气同步..."
+nohup python main.py > weather.log 2>&1 &
 
-# 生成专属启动脚本 (weather_start.sh)
-cat <<EOF > weather_start.sh
-#!/bin/bash
-while true; do
-    python main.py
-    echo "连接波动，5秒后自动重连..."
-    sleep 5
-done
-EOF
-chmod +x weather_start.sh
+echo "------------------------------------------"
+echo "🎉 大功告成！气象站已在后台开始工作。"
+echo "📍 天气文件已指向: $ST_PUBLIC/weather.txt"
+echo "💡 提示：您可以直接关掉这个窗口去玩酒馆了。"
+echo "------------------------------------------"
 
-echo "✅ 配置完成！请输入 ./weather_start.sh 启动。"
