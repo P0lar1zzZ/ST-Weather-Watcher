@@ -24,7 +24,7 @@ SillyTavern 实时天气同步插件。基于高德 API 实现，适用于国内
 ```bash
 git clone https://github.com/P0lar1zzZ/ST-Weather-Watcher.git
 cd ST-Weather-Watcher
-# 为.env填写内部参数
+# 为.env填写内部参数
 docker build -t st-weather .
 docker run -d \
   --name st-weather \
