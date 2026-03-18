@@ -22,6 +22,23 @@ fi
 ST_PATH=$(find $HOME -maxdepth 3 -type d -name "SillyTavern" 2>/dev/null | head -n 1)
 ST_PUBLIC="${ST_PATH:-$HOME/SillyTavern}/public"
 
+# --- 🚀 镜像加速：解决国内下载 1KB/s 的痛苦 ---
+echo "⚡ 正在优化下载速度（切换至清华大学镜像源）..."
+
+# 1. 切换 Termux 软件源 (pkg/apt 加速)
+sed -i 's@^\(deb.*stable main\)$@#\1\ndeb https://mirrors.tuna.tsinghua.edu.cn/termux/termux-main stable main@' $PREFIX/etc/apt/sources.list
+
+# 2. 更新系统索引并安装基础环境
+pkg update -y && pkg install python -y
+
+# 3. 切换 Pip 镜像源 (Python 库加速)
+python -m pip install --upgrade pip
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+# --- 🚀 加速结束 ---
+
+echo "📦 正在安装 Python 依赖库..."
+pip install requests python-dotenv
+
 # 4. 覆盖写入新配置
 cat <<EOF > .env
 AMAP_KEY=$USER_KEY
