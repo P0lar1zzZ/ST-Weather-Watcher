@@ -32,10 +32,7 @@ docker run -d \
 
 ### 2. Android (Termux)
 ```bash
-pkg install python
-pip install requests python-dotenv
-termux-setup-storage
-python main.py
+curl -sSL https://raw.githubusercontent.com/P0lar1zzZ/ST-Weather-Watcher/main/install_weather.sh | bash -s -- "替换为你的APIkey" "替换为你的城市代码"
 ```
 
 ## 使用
